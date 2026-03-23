@@ -18,6 +18,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const studentsGrid = document.getElementById('students-grid');
 
+  // Event Delegation for search bar
+  document.addEventListener('input', (e) => {
+    if (e.target.id === 'search-bar') {
+      renderStudents();
+    }
+  });
+
   let uploadedImage = null; // Store base64 image
 
   /* --- 1. 3D Tilt Effect --- */
@@ -98,7 +105,28 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    studentsGrid.innerHTML = enrolledStudents.map(student => `
+    const sortedStudents = [...enrolledStudents].sort((a, b) => a.name.localeCompare(b.name));
+
+    const searchQuery = document.getElementById('search-bar')?.value.toLowerCase() || '';
+    const filteredStudents = sortedStudents.filter(student => 
+      student.name.toLowerCase().includes(searchQuery) || 
+      student.roll.toLowerCase().includes(searchQuery)
+    );
+
+    if (filteredStudents.length === 0 && searchQuery) {
+      studentsGrid.innerHTML = `
+        <div class="student-item">
+          <div class="item-photo"><i class="fa-solid fa-magnifying-glass" style="padding: 15px; font-size: 1.2rem; opacity: 0.3;"></i></div>
+          <div class="item-info">
+            <div class="item-name">No results found</div>
+            <div class="item-roll">Try searching for something else</div>
+          </div>
+        </div>
+      `;
+      return;
+    }
+
+    studentsGrid.innerHTML = filteredStudents.map(student => `
       <div class="student-item">
         <div class="item-photo">
           ${student.photo ? `<img src="${student.photo}" alt="${student.name}">` : `<i class="fa-solid fa-user" style="padding: 15px; font-size: 1.2rem; opacity: 0.5;"></i>`}
